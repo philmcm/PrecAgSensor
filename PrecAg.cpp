@@ -25,6 +25,7 @@ PrecAg::PrecAg() {
   _nitrogen = 0;
   _phosphorous = 0;
   _potassium = 0;
+  _autoValveEnabled = false;
 }
 
 void PrecAg::setupSensors() {
@@ -54,6 +55,11 @@ void PrecAg::setupSensors() {
     Serial.println("Failed to initialize GPS!");
     while (1);
   } */
+
+  // initialise actuator
+  pinMode(ACTUATOR, OUTPUT);
+  digitalWrite(ACTUATOR, LOW);
+  _valveOpen = false;
 }
 
 void PrecAg::takeReadings() {
@@ -112,3 +118,37 @@ uint16_t PrecAg::getMoisture() { return _moisture; }
 byte PrecAg::getNitrogen()  { return _nitrogen; }
 byte PrecAg::getPhosphorous()  { return _phosphorous; }
 byte PrecAg::getPotassium() { return _potassium; }
+
+void PrecAg::checkValve(byte hours, byte mins, byte secs) {
+  int currentTime = secs + (mins * 60) + (hours * 3600);
+  int openTime = _valveOpenSecs + (_valveOpenMins * 60) + (_valveOpenHours * 3600);
+  int closeTime = _valveCloseSecs + (_valveCloseMins * 60) + (_valveCloseHours * 3600);
+
+  if (_autoValveEnabled == true) {
+    if (currentTime >= closeTime) {
+      digitalWrite(ACTUATOR, LOW);
+      _valveOpen = false;
+    }
+    else if (currentTime >= openTime) {
+      digitalWrite(ACTUATOR, HIGH);
+      _valveOpen = true;
+    }
+    else {
+      digitalWrite(ACTUATOR, LOW);
+      _valveOpen = false;
+    }
+  }
+}
+
+void PrecAg::setValveOpenTime(byte valveOpenHours, byte valveOpenMins, byte valveOpenSecs,
+      byte valveCloseHours, byte valveCloseMins, byte valveCloseSecs) {
+  _autoValveEnabled = true;
+  _valveOpenHours = valveOpenHours;
+  _valveOpenMins = valveOpenMins;
+  _valveOpenSecs = valveOpenSecs;
+  _valveCloseHours = valveCloseHours;
+  _valveCloseMins = valveCloseMins;
+  _valveCloseSecs = valveCloseSecs;
+}
+
+bool PrecAg::getValve() { return _valveOpen; }

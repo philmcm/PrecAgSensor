@@ -20,6 +20,8 @@
 #define BME_CS 7
 #define SEALEVELPRESSURE_HPA (1013.25)
 
+#define ACTUATOR 5
+
 class PrecAg {
   public:
       PrecAg();
@@ -40,6 +42,10 @@ class PrecAg {
       byte getNitrogen();
       byte getPhosphorous();
       byte getPotassium();
+      bool getValve();
+      void checkValve(byte hours, byte mins, byte secs);
+      void setValveOpenTime(byte valveOpenHours, byte valveOpenMins, byte valveOpenSecs,
+        byte valveCloseHours, byte valveCloseMins, byte valveCloseSecs);
   private:
       float _temperature;
       float _pressure;
@@ -50,5 +56,13 @@ class PrecAg {
       byte _nitrogen;
       byte _phosphorous;
       byte _potassium;
+      byte _valveOpenHours;
+      byte _valveOpenMins;
+      byte _valveOpenSecs;
+      byte _valveCloseHours;
+      byte _valveCloseMins;
+      byte _valveCloseSecs;
+      bool _autoValveEnabled;
+      bool _valveOpen;
 };
 #endif
