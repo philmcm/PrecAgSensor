@@ -1,6 +1,5 @@
 /*  
-  PrecAg.cpp - Library for precision Agriculture sensing.
-  Interrupt-based Version
+  PrecAg.cpp - Library for Precision Agriculture sensing.
   Created for ENGG4201/8201 by Andrew Miller, Phil McMillan
 */
 #include "Arduino.h"
@@ -21,7 +20,8 @@ PrecAg::PrecAg() {
   _humidity = 0;
   _altitude = 0;
   _light = 0;
-  _moisture = 0;
+  for (int i=0; i < FILTER_TERMS; i++)
+    _moisture[i] = 0;
   _nitrogen = 0;
   _phosphorous = 0;
   _potassium = 0;
@@ -72,8 +72,11 @@ void PrecAg::takeReadings() {
   // take reading from analog light sensor
   _light = analogRead(0);
 
-  // take reading from soil sensor
-  _moisture = ss.touchRead(0);
+  // take reading from soil sensor, maintain multiple terms for averaging
+  for (int i=0; i < FILTER_TERMS - 1; i++) {
+    _moisture[i]=_moisture[i+1];
+  }
+  _moisture[FILTER_TERMS - 1] = ss.touchRead(0);
 }  
 
 void PrecAg::sendNReq() {
@@ -114,7 +117,12 @@ float PrecAg::getPressure() { return _pressure; }
 float PrecAg::getAltitude() { return _altitude; }
 float PrecAg::getHumidity() { return _humidity; }
 int PrecAg::getLight() { return _light; }
-uint16_t PrecAg::getMoisture() { return _moisture; }
+uint16_t PrecAg::getMoisture() {
+  int sum=0;
+  for (int i=0; i < FILTER_TERMS; i++)
+    sum += _moisture[i];
+  return (sum/FILTER_TERMS);
+}
 byte PrecAg::getNitrogen()  { return _nitrogen; }
 byte PrecAg::getPhosphorous()  { return _phosphorous; }
 byte PrecAg::getPotassium() { return _potassium; }

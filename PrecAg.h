@@ -22,6 +22,9 @@
 
 #define ACTUATOR 5
 
+// number of filter terms for the moisture sensor (used for averaging)
+#define FILTER_TERMS 5
+
 class PrecAg {
   public:
       PrecAg();
@@ -52,7 +55,7 @@ class PrecAg {
       float _humidity;
       float _altitude;
       int _light;
-      uint16_t _moisture;
+      uint16_t _moisture[FILTER_TERMS];
       byte _nitrogen;
       byte _phosphorous;
       byte _potassium;
